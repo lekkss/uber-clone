@@ -1,12 +1,12 @@
+import { Stack } from "expo-router";
 import React from "react";
-import { Text, View } from "react-native";
 
-const _layout = () => {
+const Layout = () => {
   return (
-    <View>
-      <Text>Root Layout</Text>
-    </View>
+    <Stack>
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    </Stack>
   );
 };
 
-export default _layout;
+export default Layout;

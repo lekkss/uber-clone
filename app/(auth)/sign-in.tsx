@@ -2,19 +2,46 @@ import CustomButton from "@/components/CustomButton";
 import InputField from "@/components/InputField";
 import OAuth from "@/components/OAuth";
 import { icons, images } from "@/constants";
-import { Link } from "expo-router";
-import { useState } from "react";
-import { Image, ScrollView, Text, View } from "react-native";
+import { useSignIn } from "@clerk/clerk-expo";
+import { Link, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import { Alert, Image, ScrollView, Text, View } from "react-native";
 
 const SignIn = () => {
+  const { signIn, setActive, isLoaded } = useSignIn();
+  const router = useRouter();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  const onSignIn = async () => {
-    console.log("Sign In");
-  };
+  const onSignInPress = useCallback(async () => {
+    if (!isLoaded) return;
+
+    // Start the sign-in process using the email and password provided
+    try {
+      const signInAttempt = await signIn.create({
+        identifier: formData.email,
+        password: formData.password,
+      });
+
+      // If sign-in process is complete, set the created session as active
+      // and redirect the user
+      if (signInAttempt.status === "complete") {
+        await setActive({ session: signInAttempt.createdSessionId });
+        router.replace("/(root)/(tabs)/home");
+      } else {
+        // If the status isn't complete, check why. User might need to
+        // complete further steps.
+        console.error(JSON.stringify(signInAttempt, null, 2));
+      }
+    } catch (err: any) {
+      // See https://clerk.com/docs/custom-flows/error-handling
+      // for more info on error handling
+      Alert.alert("Error", err.errors[0].longMessage || "Sign in failed");
+      console.error(JSON.stringify(err, null, 2));
+    }
+  }, [formData.email, formData.password, isLoaded, router, signIn, setActive]);
   return (
     <ScrollView className="flex-1 bg-white">
       <View className="flex-1 bg-white">
@@ -46,7 +73,11 @@ const SignIn = () => {
               setFormData({ ...formData, password: text })
             }
           />
-          <CustomButton title="Sign In" onPress={onSignIn} className="mt-6" />
+          <CustomButton
+            title="Sign In"
+            onPress={onSignInPress}
+            className="mt-6"
+          />
           {/* OAuth */}
           <OAuth />
           <Link
