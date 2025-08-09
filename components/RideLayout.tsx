@@ -1,5 +1,5 @@
 import { icons } from "@/constants";
-import BottomSheet from "@gorhom/bottom-sheet";
+import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
 import { useRef } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
@@ -9,9 +9,11 @@ import Map from "./Map";
 const RideLayout = ({
   children,
   title,
+  snapPoints = ["85%"],
 }: {
   children: React.ReactNode;
   title: string;
+  snapPoints?: string[];
 }) => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   return (
@@ -34,7 +36,17 @@ const RideLayout = ({
           </View>
           <Map />
         </View>
-        <BottomSheet></BottomSheet>
+        <BottomSheet
+          keyboardBehavior="extend"
+          ref={bottomSheetRef}
+          snapPoints={snapPoints || ["45%", "85%"]}
+          enablePanDownToClose
+          index={0}
+        >
+          <BottomSheetView style={{ flex: 1, padding: 20 }}>
+            {children}
+          </BottomSheetView>
+        </BottomSheet>
       </View>
     </GestureHandlerRootView>
   );
